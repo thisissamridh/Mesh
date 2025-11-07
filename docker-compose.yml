@@ -5,12 +5,14 @@ services:
   registry:
     build: .
     container_name: x402_registry
-    command: python3 -m uvicorn registry.src.main:app --host 0.0.0.0 --port 8000
+    working_dir: /app/registry
+    command: python3 -m uvicorn src.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL}
+      - PYTHONPATH=/app
     networks:
       - x402_network
     healthcheck:
@@ -23,12 +25,14 @@ services:
   facilitator:
     build: .
     container_name: x402_facilitator
+    working_dir: /app
     command: python3 facilitator/src/simple_facilitator.py
     ports:
       - "3000:3000"
     environment:
       - FACILITATOR_PRIVATE_KEY=${FACILITATOR_PRIVATE_KEY}
       - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+      - PYTHONPATH=/app
     networks:
       - x402_network
     depends_on:
@@ -44,6 +48,7 @@ services:
   provider_001:
     build: .
     container_name: x402_provider_001
+    working_dir: /app
     command: python3 agents/src/bidding_data_provider.py
     ports:
       - "5001:5001"
@@ -54,6 +59,7 @@ services:
       - REGISTRY_URL=http://registry:8000
       - FACILITATOR_URL=http://facilitator:3000
       - USDC_MINT_ADDRESS=${USDC_MINT_ADDRESS}
+      - PYTHONPATH=/app
     networks:
       - x402_network
     depends_on:
@@ -66,6 +72,7 @@ services:
   provider_002:
     build: .
     container_name: x402_provider_002
+    working_dir: /app
     command: python3 agents/src/data_provider_002.py
     ports:
       - "5002:5002"
@@ -76,6 +83,7 @@ services:
       - REGISTRY_URL=http://registry:8000
       - FACILITATOR_URL=http://facilitator:3000
       - USDC_MINT_ADDRESS=${USDC_MINT_ADDRESS}
+      - PYTHONPATH=/app
     networks:
       - x402_network
     depends_on:
