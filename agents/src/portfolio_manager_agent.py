@@ -47,7 +47,7 @@ class PortfolioManagerAgent(ConsumerMixin):
         openai_client = OpenAI(api_key=api_key)
 
         # Initialize x402 client for payments
-        private_key = os.getenv("ORCHESTRATOR_PRIVATE_KEY")  # Reuse orchestrator wallet
+        private_key = os.getenv("PORTFOLIO_MANAGER_PRIVATE_KEY")
         if private_key:
             payer_keypair = Keypair.from_bytes(base58.b58decode(private_key))
             x402_client = X402Client(

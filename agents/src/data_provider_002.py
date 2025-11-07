@@ -22,7 +22,7 @@ if __name__ == "__main__":
     agent = BiddingDataProviderAgent(
         agent_id="data_provider_002",
         agent_name="Fast Price Provider",
-        wallet_address=os.getenv("PROVIDER_PUBKEY", "WALLET_ADDRESS_HERE"),
+        wallet_address=os.getenv("PROVIDER_002_PUBKEY", "WALLET_ADDRESS_HERE"),
         port=5002,
         base_price_usdc=0.00012,  # Slightly cheaper than provider_001
     )
