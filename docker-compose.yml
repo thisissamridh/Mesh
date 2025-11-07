@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Registry - Marketplace Intelligence Layer
+  registry:
+    build: .
+    container_name: x402_registry
+    command: python3 -m uvicorn registry.src.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+    networks:
+      - x402_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Facilitator - x402 Payment Handler
+  facilitator:
+    build: .
+    container_name: x402_facilitator
+    command: python3 facilitator/src/simple_facilitator.py
+    ports:
+      - "3000:3000"
+    environment:
+      - FACILITATOR_PRIVATE_KEY=${FACILITATOR_PRIVATE_KEY}
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+    networks:
+      - x402_network
+    depends_on:
+      registry:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Data Provider 1 - Premium Quality (0.00015 USDC)
+  provider_001:
+    build: .
+    container_name: x402_provider_001
+    command: python3 agents/src/bidding_data_provider.py
+    ports:
+      - "5001:5001"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - PROVIDER_PUBKEY=${PROVIDER_PUBKEY}
+      - REGISTRY_URL=http://registry:8000
+      - FACILITATOR_URL=http://facilitator:3000
+      - USDC_MINT_ADDRESS=${USDC_MINT_ADDRESS}
+    networks:
+      - x402_network
+    depends_on:
+      registry:
+        condition: service_healthy
+      facilitator:
+        condition: service_healthy
+
+  # Data Provider 2 - Budget Speed (0.00012 USDC)
+  provider_002:
+    build: .
+    container_name: x402_provider_002
+    command: python3 agents/src/data_provider_002.py
+    ports:
+      - "5002:5002"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - PROVIDER_002_PUBKEY=${PROVIDER_002_PUBKEY}
+      - REGISTRY_URL=http://registry:8000
+      - FACILITATOR_URL=http://facilitator:3000
+      - USDC_MINT_ADDRESS=${USDC_MINT_ADDRESS}
+    networks:
+      - x402_network
+    depends_on:
+      registry:
+        condition: service_healthy
+      facilitator:
+        condition: service_healthy
+
+networks:
+  x402_network:
+    driver: bridge
