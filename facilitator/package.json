@@ -1,0 +1,36 @@
+{
+  "name": "@x402/facilitator",
+  "version": "0.1.0",
+  "description": "x402 Payment Facilitator with Kora integration",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "start:kora": "kora rpc --config ./kora.toml --signers ./signers.toml",
+    "setup": "node scripts/generate-config.js"
+  },
+  "keywords": [
+    "x402",
+    "solana",
+    "kora",
+    "facilitator"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@kora-labs/kora-sdk": "^0.1.0",
+    "@payai/x402-solana": "^0.1.0",
+    "@solana/web3.js": "^1.95.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

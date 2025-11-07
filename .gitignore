@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+.Python
+env/
+build/
+dist/
+*.egg-info/
+
+# Environment files
+.env
+.env.local
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# Build outputs
+*.js.map
+*.d.ts
+/facilitator/dist/
+/registry/.mypy_cache/
+
+# Solana
+test-ledger/
+*.so
+target/
+
+# Misc
+.turbo/
+.next/
+out/

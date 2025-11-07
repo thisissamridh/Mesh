@@ -1,0 +1,33 @@
+# Kora RPC Configuration for x402 Facilitator
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[kora.auth]
+api_key = "kora_facilitator_api_key_example"
+
+# Payment token allowlist (USDC on devnet)
+allowed_tokens = [
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # USDC devnet
+]
+
+# Fee payer policy - restrict what transactions we'll sign
+[validation.fee_payer_policy]
+allow_sol_transfers = false
+allow_token_transfers = true
+allow_account_creation = true
+allow_account_closure = false
+max_fee_lamports = 10000  # 0.00001 SOL
+
+# Allowed programs that can be called
+allowed_programs = [
+    "11111111111111111111111111111111",              # System Program
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",   # Token Program
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",  # Associated Token Program
+    "ComputeBudget111111111111111111111111111111",   # Compute Budget Program
+]
+
+[solana]
+rpc_url = "https://api.devnet.solana.com"
+commitment = "confirmed"
