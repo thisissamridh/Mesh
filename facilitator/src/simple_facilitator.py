@@ -36,13 +36,15 @@ FACILITATOR_PRIVATE_KEY = os.getenv("FACILITATOR_PRIVATE_KEY")
 facilitator_keypair = Keypair.from_bytes(base58.b58decode(FACILITATOR_PRIVATE_KEY))
 
 RPC_URL = os.getenv("SOLANA_RPC_URL", "https://api.devnet.solana.com")
+KORA_RPC_URL = os.getenv("KORA_RPC_URL", "http://localhost:8080")
 http_client = httpx.Client()
 
 print(f"\n{'='*60}")
-print(f"  x402 Facilitator Starting")
+print(f"  x402 Facilitator Starting (with Kora)")
 print(f"{'='*60}")
 print(f"  Facilitator Pubkey: {facilitator_keypair.pubkey()}")
 print(f"  RPC URL: {RPC_URL}")
+print(f"  Kora RPC URL: {KORA_RPC_URL}")
 print(f"{'='*60}\n")
 
 
@@ -81,23 +83,35 @@ def get_supported():
 async def verify_payment(request: VerifyRequest):
     """
     x402 /verify endpoint
-    Verifies transaction without broadcasting
+    Verifies transaction using Kora's signTransaction (gasless validation)
     """
     try:
-        # Decode transaction
-        tx_bytes = base58.b58decode(request.payment)
-        transaction = Transaction.from_bytes(tx_bytes)
+        print(f"\n🔍 Verifying transaction via Kora...")
 
-        print(f"\n🔍 Verifying transaction...")
-        print(f"   Signatures: {len(transaction.signatures)}")
+        # Call Kora's signTransaction endpoint
+        kora_response = http_client.post(
+            f"{KORA_RPC_URL}/signTransaction",
+            json={
+                "transaction": request.payment,
+                "commitment": "confirmed",
+            },
+        )
 
-        # Basic validation
-        is_valid = len(transaction.signatures) > 0
+        if kora_response.status_code == 200:
+            result = kora_response.json()
+            is_valid = "signature" in result or "transaction" in result
 
-        return {
-            "isValid": is_valid,
-            "message": "Transaction verified" if is_valid else "Invalid transaction",
-        }
+            print(f"   ✅ Kora validated transaction")
+            return {
+                "isValid": is_valid,
+                "message": "Transaction verified by Kora",
+            }
+        else:
+            print(f"   ❌ Kora validation failed: {kora_response.text}")
+            return {
+                "isValid": False,
+                "message": f"Kora validation failed: {kora_response.text}",
+            }
 
     except Exception as e:
         print(f"❌ Verification failed: {str(e)}")
@@ -108,55 +122,43 @@ async def verify_payment(request: VerifyRequest):
 async def settle_payment(request: SettleRequest):
     """
     x402 /settle endpoint
-    Signs transaction as fee payer and broadcasts to Solana
+    Uses Kora to sign as fee payer and broadcast (GASLESS for user!)
     """
     try:
-        # Decode transaction
-        tx_bytes = base58.b58decode(request.payment)
-        transaction = Transaction.from_bytes(tx_bytes)
-
-        print(f"\n💳 Settling payment...")
+        print(f"\n💳 Settling payment via Kora (gasless)...")
         print(f"   Transaction: {request.payment[:20]}...")
 
-        # For MVP: Just broadcast the already-signed transaction from client
-        # The client's wallet pays its own fees
-        # In production with Kora, facilitator would sign as fee payer
-
-        serialized = request.payment
-
-        send_response = http_client.post(
-            RPC_URL,
+        # Call Kora's signAndSendTransaction endpoint
+        # Kora will sign as fee payer and broadcast to Solana
+        kora_response = http_client.post(
+            f"{KORA_RPC_URL}/signAndSendTransaction",
             json={
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "sendTransaction",
-                "params": [
-                    serialized,
-                    {
-                        "encoding": "base58",
-                        "skipPreflight": False,
-                        "preflightCommitment": "processed",
-                    },
-                ],
+                "transaction": request.payment,
+                "commitment": "confirmed",
             },
         )
 
-        result = send_response.json()
+        if kora_response.status_code == 200:
+            result = kora_response.json()
+            signature = result.get("signature") or result.get("transaction")
 
-        if "result" in result:
-            signature = result["result"]
-            print(f"✅ Payment settled!")
-            print(f"   Signature: {signature}")
+            if signature:
+                print(f"✅ Payment settled via Kora!")
+                print(f"   Signature: {signature}")
+                print(f"   🎉 Gasless: Kora paid the fees!")
 
-            return {
-                "success": True,
-                "transaction": signature,
-                "network": "solana-devnet",
-            }
+                return {
+                    "success": True,
+                    "transaction": signature,
+                    "network": "solana-devnet",
+                    "gasless": True,
+                }
+            else:
+                raise Exception(f"No signature in Kora response: {result}")
         else:
-            error = result.get("error", {})
-            print(f"❌ Settlement failed: {error}")
-            raise Exception(f"Transaction failed: {error}")
+            error_text = kora_response.text
+            print(f"❌ Kora settlement failed: {error_text}")
+            raise Exception(f"Kora settlement failed: {error_text}")
 
     except Exception as e:
         print(f"❌ Settlement error: {str(e)}")

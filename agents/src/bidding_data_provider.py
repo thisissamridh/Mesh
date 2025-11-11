@@ -49,6 +49,7 @@ class BiddingDataProviderAgent:
         agent_name: str,
         wallet_address: str,
         registry_url: str = "http://localhost:8000",
+        endpoint_url: Optional[str] = None,
         port: int = 5000,
         base_price_usdc: float = 0.0001,
         openai_api_key: Optional[str] = None,
@@ -58,6 +59,7 @@ class BiddingDataProviderAgent:
         self.agent_name = agent_name
         self.wallet_address = wallet_address
         self.registry_url = registry_url
+        self.endpoint_url = endpoint_url or f"http://localhost:{port}"
         self.port = port
         self.base_price_usdc = base_price_usdc
         self.app = FastAPI(title=f"BiddingDataProvider-{agent_id}")
@@ -385,7 +387,7 @@ Respond in JSON:
             "name": self.agent_name,
             "service_type": "data_provider",
             "wallet_address": self.wallet_address,
-            "endpoint_url": f"http://localhost:{self.port}",
+            "endpoint_url": self.endpoint_url,
             "capabilities": [
                 {
                     "name": "SOL/USDC Price",
@@ -463,6 +465,8 @@ if __name__ == "__main__":
         agent_id="bidding_data_provider_001",
         agent_name="AI-Powered Price Provider",
         wallet_address=os.getenv("PROVIDER_PUBKEY", "WALLET_ADDRESS_HERE"),
+        registry_url=os.getenv("REGISTRY_URL", "http://localhost:8000"),
+        endpoint_url=os.getenv("ENDPOINT_URL", "http://localhost:5001"),
         port=5001,
         base_price_usdc=0.00015,  # Price from AI bid
     )

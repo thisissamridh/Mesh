@@ -4,29 +4,75 @@
 host = "0.0.0.0"
 port = 8080
 
+[kora]
+rate_limit = 100
+
 [kora.auth]
 api_key = "kora_facilitator_api_key_example"
 
-# Payment token allowlist (USDC on devnet)
-allowed_tokens = [
-    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # USDC devnet
-]
+[kora.cache]
+enabled = false
+default_ttl = 300
+account_ttl = 60
 
-# Fee payer policy - restrict what transactions we'll sign
-[validation.fee_payer_policy]
-allow_sol_transfers = false
-allow_token_transfers = true
-allow_account_creation = true
-allow_account_closure = false
-max_fee_lamports = 10000  # 0.00001 SOL
+[kora.enabled_methods]
+liveness = true
+estimate_transaction_fee = true
+get_supported_tokens = true
+sign_transaction = true
+sign_and_send_transaction = true
+transfer_transaction = true
+get_blockhash = true
+get_config = true
+sign_transaction_if_paid = true
+get_payer_signer = true
 
-# Allowed programs that can be called
+[validation]
+max_allowed_lamports = 1000000
+max_signatures = 10
+price_source = "Mock"
+
 allowed_programs = [
     "11111111111111111111111111111111",              # System Program
     "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",   # Token Program
     "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",  # Associated Token Program
-    "ComputeBudget111111111111111111111111111111",   # Compute Budget Program
+    "AddressLookupTab1e1111111111111111111111111",   # Address Lookup Table Program
+    "ComputeBudget11111111111111111111111111111111", # Compute Budget Program
 ]
+allowed_tokens = [
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # USDC devnet
+]
+allowed_spl_paid_tokens = [
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # USDC devnet
+]
+disallowed_accounts = []
+
+[validation.fee_payer_policy]
+allow_sol_transfers = true
+allow_spl_transfers = true
+allow_token2022_transfers = true
+allow_assign = true
+allow_burn = true
+allow_close_account = true
+allow_approve = true
+
+[validation.price]
+type = "margin"
+margin = 0.1
+
+[validation.token2022]
+blocked_mint_extensions = []
+blocked_account_extensions = []
+
+[metrics]
+enabled = true
+endpoint = "/metrics"
+port = 8080
+scrape_interval = 60
+
+[metrics.fee_payer_balance]
+enabled = true
+expiry_seconds = 30
 
 [solana]
 rpc_url = "https://api.devnet.solana.com"

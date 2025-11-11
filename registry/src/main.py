@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 import uvicorn
 
-from schemas import (
+from .schemas import (
     AgentRegistration,
     AgentInfo,
     AgentListResponse,
@@ -31,7 +31,7 @@ from shared.schemas.negotiation import (
     TaskType,
     ProviderRating,
 )
-from rfp_manager import RFPManager
+from .rfp_manager import RFPManager
 import uuid
 
 # Initialize FastAPI app

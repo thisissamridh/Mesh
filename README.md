@@ -1,126 +1,57 @@
-# Agent-to-Agent Settlement Layer on Solana
+# x402 - AI Marketplace with Solana Payments
 
-> The missing link for autonomous agent commerce on Solana x402
+Autonomous agents with AI bidding and Solana-based payments.
 
-An open-source SDK enabling autonomous AI agents to discover, negotiate, and pay each other directly using the x402 micropayment protocol on Solana.
-
-## Overview
-
-This project introduces a **trustless settlement layer** that allows AI agents to:
-- **Register** services with pricing and capabilities
-- **Discover** other agents through a decentralized registry
-- **Negotiate** and agree on payment terms
-- **Settle** micropayments instantly on Solana via x402
-- **Execute** tasks autonomously without intermediaries
-
-## Architecture
+## Project Structure
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Python Agents  │────▶│  Agent Registry  │────▶│ x402 Facilitator│
-│  (Pydantic AI)  │     │   (FastAPI)      │     │  (TypeScript)   │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-                               │                          │
-                               ▼                          ▼
-                        ┌──────────────┐          ┌─────────────┐
-                        │   Database   │          │  Kora RPC   │
-                        │   (Registry) │          │  + Solana   │
-                        └──────────────┘          └─────────────┘
+x402/
+├── agents/              # AI agent implementations
+│   └── src/            # Agent source code (portfolio manager, data providers)
+├── facilitator/        # x402 payment handler with Kora integration
+│   └── src/           # Facilitator source code
+├── registry/           # Marketplace intelligence layer
+│   └── src/           # Registry source code
+├── shared/            # Shared schemas and types
+├── demos/             # Demo scripts
+│   ├── run_demo_local.sh       # Run demo with local services
+│   ├── run_demo_docker.sh      # Run demo with Docker
+│   ├── run_demo_kora.py        # Kora integration demo
+│   ├── demo_payment_flow.sh    # Payment flow demonstration
+│   └── demo_x402_flow.sh       # x402 protocol demonstration
+├── docker/            # Docker configuration
+│   ├── docker-compose.yml      # Service orchestration
+│   ├── Dockerfile              # Main Dockerfile
+│   └── Dockerfile.kora-provider # Kora provider Dockerfile
+└── scripts/           # Utility scripts
+    ├── setup_token_accounts.py # Token account setup
+    └── start_kora.sh           # Start Kora RPC server
+
 ```
-
-## Components
-
-### 1. x402 Facilitator (TypeScript)
-Payment verification and settlement service using Kora for gasless Solana transactions.
-
-### 2. Agent Registry (FastAPI)
-Decentralized marketplace where agents register services and discover other agents.
-
-### 3. Python Agents (Pydantic AI)
-Autonomous agents that offer or consume services:
-- **DataProviderAgent**: Offers real-time price data
-- **ConsumerAgent**: Discovers and pays for data
-
-### 4. Shared Schemas
-Common types and protocols for agent-to-agent communication.
 
 ## Quick Start
 
-### Prerequisites
-- Node.js (LTS) + pnpm
-- Python 3.11+
-- Rust (latest stable)
-- Solana CLI
-
-### Installation
-
+### Run Demo Locally
 ```bash
-# Clone and navigate
-cd x402
-
-# Install facilitator dependencies
-cd facilitator && pnpm install && cd ..
-
-# Install Python dependencies
-cd agents && pip install -r requirements.txt && cd ..
-cd registry && pip install -r requirements.txt && cd ..
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your Solana keypairs
+./demos/run_demo_local.sh
 ```
 
-### Running the Demo
-
+### Run Demo with Docker
 ```bash
-# Terminal 1: Start Kora RPC
-pnpm run start:kora
+# Start services
+docker compose -f docker/docker-compose.yml up -d
 
-# Terminal 2: Start Facilitator
-pnpm run start:facilitator
-
-# Terminal 3: Start Registry
-pnpm run start:registry
-
-# Terminal 4: Run Demo
-pnpm run demo
+# Run demo
+./demos/run_demo_docker.sh
 ```
 
-## Example Flow
+## Configuration
 
-1. **DataProviderAgent** registers: "I provide SOL/USDC prices for 0.0001 USDC per call"
-2. **ConsumerAgent** queries registry: "Who provides price data?"
-3. Registry returns DataProvider details + pricing
-4. ConsumerAgent creates x402 payment transaction
-5. Payment settles on Solana via facilitator
-6. DataProvider returns price data with receipt
+- `.env` - Environment configuration
+- `.env.example` - Example environment variables
 
-## Tech Stack
+## Requirements
 
-- **Blockchain**: Solana (devnet/mainnet)
-- **Payment Protocol**: x402 + Kora
-- **Agent Framework**: Pydantic AI
-- **Backend**: FastAPI (Python), Express (TypeScript)
-- **Database**: Supabase / PostgreSQL
-
-## Hackathon Tracks
-
-This project targets:
-- **Best Trustless Agent** ($10k)
-- **Best x402 API Integration** ($10k)
-
-## License
-
-MIT License - Open source for the agent economy
-
-## Documentation
-
-See `/docs` folder for:
-- Setup guide
-- API reference
-- Architecture details
-- Example use cases
-
----
-
-Built for the Solana x402 Hackathon 2025
+- Python 3.8+
+- Docker & Docker Compose
+- Solana CLI tools (for Kora integration)

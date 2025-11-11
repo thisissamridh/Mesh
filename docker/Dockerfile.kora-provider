@@ -1,0 +1,34 @@
+# Dockerfile for x402 providers with USDC + Kora support
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY agents/requirements.kora.txt requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy shared schemas
+COPY shared/ /app/shared/
+
+# Copy agent source code
+COPY agents/src/ /app/agents/src/
+
+# Kora Provider 001
+FROM base AS kora_provider_001
+ENV PROVIDER_ID=kora_provider_001
+ENV PROVIDER_PORT=6001
+CMD ["python3", "agents/src/kora_provider.py"]
+
+# Kora Provider 002
+FROM base AS kora_provider_002
+ENV PROVIDER_ID=kora_provider_002
+ENV PROVIDER_PORT=6002
+CMD ["python3", "agents/src/kora_provider.py"]

@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
 
-from consumer_mixin import ConsumerMixin
+from consumer_mixin import ConsumerMixin, Colors, print_box, print_section
 from x402_client import X402Client
 from shared.schemas.negotiation import TaskType
 
@@ -56,11 +56,13 @@ class PortfolioManagerAgent(ConsumerMixin):
                 network="solana-devnet",
             )
             self.has_wallet = True
-            print(f"   💳 x402 Payment Enabled: {payer_keypair.pubkey()}")
+            wallet_address = str(payer_keypair.pubkey())
+            print(f"\n{Colors.GREEN}💳 x402 Payment Enabled{Colors.ENDC}")
+            print(f"{Colors.DIM}   Wallet: {wallet_address}{Colors.ENDC}")
         else:
             x402_client = None
             self.has_wallet = False
-            print(f"   ⚠️  x402 disabled (no wallet key)")
+            print(f"\n{Colors.YELLOW}⚠️  x402 disabled (no wallet key){Colors.ENDC}")
 
         # Setup consumer capabilities
         self.setup_consumer(
@@ -71,14 +73,11 @@ class PortfolioManagerAgent(ConsumerMixin):
             model=self.model,
         )
 
-        print(f"\n{'='*60}")
-        print(f"  Portfolio Manager Agent Initialized")
-        print(f"{'='*60}")
-        print(f"  Agent ID: {self.agent_id}")
-        print(f"  Registry: {self.registry_url}")
-        print(f"  AI Model: {self.model}")
-        print(f"  Consumer Capabilities: ✅")
-        print(f"{'='*60}\n")
+        print_box("🤖 PORTFOLIO MANAGER INITIALIZED", Colors.CYAN, 70)
+        print(f"{Colors.BOLD}Agent ID:{Colors.ENDC}      {Colors.CYAN}{self.agent_id}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Registry:{Colors.ENDC}      {Colors.DIM}{self.registry_url}{Colors.ENDC}")
+        print(f"{Colors.BOLD}AI Model:{Colors.ENDC}      {Colors.HEADER}{self.model}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Consumer:{Colors.ENDC}      {Colors.GREEN}✅ Enabled{Colors.ENDC}\n")
 
     def get_portfolio_price_data(self, symbol: str = "SOL/USDC"):
         """
@@ -116,21 +115,31 @@ if __name__ == "__main__":
 
     portfolio_agent = PortfolioManagerAgent(
         agent_id="portfolio_manager_001",
+        registry_url=os.getenv("REGISTRY_URL", "http://localhost:8000"),
     )
 
-    print("\n" + "="*60)
-    print("  DEMO: Portfolio Manager Requesting Price Data")
-    print("="*60 + "\n")
+    print_box("🎯 DEMO: Requesting SOL/USDC Price Data", Colors.HEADER, 70)
 
     # Request price data - AI will evaluate bids and choose provider
     result = portfolio_agent.get_portfolio_price_data()
 
     if result["success"]:
-        print(f"\n✅ SUCCESS!")
-        print(f"   Provider: {result['assignment']['provider_id']}")
-        print(f"   Price Paid: {result['assignment']['agreed_price_usdc']} USDC")
-        print(f"   Total Bids: {result['total_bids']}")
-        print(f"   Transaction: {result.get('payment_tx', 'N/A')}")
-        print(f"   Data: {result.get('data', {})}")
+        print_box("🎉 DEMO COMPLETED SUCCESSFULLY", Colors.GREEN, 70)
+        print(f"{Colors.BOLD}Provider:{Colors.ENDC}     {Colors.CYAN}{result['assignment']['provider_id']}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Price Paid:{Colors.ENDC}   {Colors.GREEN}{result['assignment']['agreed_price_usdc']} USDC{Colors.ENDC}")
+        print(f"{Colors.BOLD}Total Bids:{Colors.ENDC}   {Colors.YELLOW}{result['total_bids']}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Tx Hash:{Colors.ENDC}      {Colors.GREEN}{result.get('payment_tx', 'N/A')}{Colors.ENDC}")
+
+        # Show received data
+        data = result.get('data', {})
+        if data:
+            print(f"\n{Colors.BOLD}📊 Received Data:{Colors.ENDC}")
+            if 'data' in data:
+                inner_data = data['data']
+                print(f"   {Colors.CYAN}Symbol:{Colors.ENDC} {inner_data.get('symbol', 'N/A')}")
+                print(f"   {Colors.GREEN}{Colors.BOLD}Price:{Colors.ENDC} ${inner_data.get('price', 0)}")
+                print(f"   {Colors.DIM}Source: {inner_data.get('source', 'N/A')}{Colors.ENDC}")
+        print()
     else:
-        print(f"\n❌ FAILED: {result.get('error', 'Unknown error')}")
+        print_box("❌ DEMO FAILED", Colors.RED, 70)
+        print(f"{Colors.RED}Error: {result.get('error', 'Unknown error')}{Colors.ENDC}\n")

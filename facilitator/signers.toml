@@ -1,5 +1,8 @@
 # Kora Signer Configuration
 
+[signer_pool]
+strategy = "round_robin"
+
 [[signers]]
 name = "main_signer"
 type = "memory"

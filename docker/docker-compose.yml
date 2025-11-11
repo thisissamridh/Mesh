@@ -3,10 +3,10 @@ version: '3.8'
 services:
   # Registry - Marketplace Intelligence Layer
   registry:
-    build: .
+    build: ..
     container_name: x402_registry
-    working_dir: /app/registry
-    command: python3 -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+    working_dir: /app
+    command: python3 -m uvicorn registry.src.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     environment:
@@ -16,14 +16,14 @@ services:
     networks:
       - x402_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/').read()"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Facilitator - x402 Payment Handler
+  # Facilitator - x402 Payment Handler (with Kora integration)
   facilitator:
-    build: .
+    build: ..
     container_name: x402_facilitator
     working_dir: /app
     command: python3 facilitator/src/simple_facilitator.py
@@ -32,6 +32,7 @@ services:
     environment:
       - FACILITATOR_PRIVATE_KEY=${FACILITATOR_PRIVATE_KEY}
       - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+      - KORA_RPC_URL=http://host.docker.internal:8080
       - PYTHONPATH=/app
     networks:
       - x402_network
@@ -39,14 +40,14 @@ services:
       registry:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3000/').read()"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   # Data Provider 1 - Premium Quality (0.00015 USDC)
   provider_001:
-    build: .
+    build: ..
     container_name: x402_provider_001
     working_dir: /app
     command: python3 agents/src/bidding_data_provider.py
@@ -58,6 +59,7 @@ services:
       - PROVIDER_PUBKEY=${PROVIDER_PUBKEY}
       - REGISTRY_URL=http://registry:8000
       - FACILITATOR_URL=http://facilitator:3000
+      - ENDPOINT_URL=http://provider_001:5001
       - USDC_MINT_ADDRESS=${USDC_MINT_ADDRESS}
       - PYTHONPATH=/app
     networks:
@@ -70,7 +72,7 @@ services:
 
   # Data Provider 2 - Budget Speed (0.00012 USDC)
   provider_002:
-    build: .
+    build: ..
     container_name: x402_provider_002
     working_dir: /app
     command: python3 agents/src/data_provider_002.py
@@ -82,6 +84,7 @@ services:
       - PROVIDER_002_PUBKEY=${PROVIDER_002_PUBKEY}
       - REGISTRY_URL=http://registry:8000
       - FACILITATOR_URL=http://facilitator:3000
+      - ENDPOINT_URL=http://provider_002:5002
       - USDC_MINT_ADDRESS=${USDC_MINT_ADDRESS}
       - PYTHONPATH=/app
     networks:
@@ -91,6 +94,51 @@ services:
         condition: service_healthy
       facilitator:
         condition: service_healthy
+
+  # NEW: x402 USDC Providers with Kora (proper x402 implementation)
+  kora_provider_001:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.kora-provider
+      target: kora_provider_001
+    container_name: x402_kora_provider_001
+    ports:
+      - "6001:6001"
+    environment:
+      - PROVIDER_ID=kora_provider_001
+      - PROVIDER_NAME=USDC Price Provider (Kora)
+      - PROVIDER_PORT=6001
+      - REGISTRY_URL=http://registry:8000
+      - FACILITATOR_URL=http://facilitator:3000
+      - WALLET_PRIVATE_KEY=${PROVIDER_001_PRIVATE_KEY}
+      - USDC_MINT=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+    depends_on:
+      - registry
+      - facilitator
+    networks:
+      - x402_network
+
+  kora_provider_002:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.kora-provider
+      target: kora_provider_002
+    container_name: x402_kora_provider_002
+    ports:
+      - "6002:6002"
+    environment:
+      - PROVIDER_ID=kora_provider_002
+      - PROVIDER_NAME=AI-Powered USDC Provider (Kora)
+      - PROVIDER_PORT=6002
+      - REGISTRY_URL=http://registry:8000
+      - FACILITATOR_URL=http://facilitator:3000
+      - WALLET_PRIVATE_KEY=${PROVIDER_002_PRIVATE_KEY}
+      - USDC_MINT=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+    depends_on:
+      - registry
+      - facilitator
+    networks:
+      - x402_network
 
 networks:
   x402_network:

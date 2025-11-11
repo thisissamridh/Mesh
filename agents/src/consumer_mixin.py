@@ -16,6 +16,33 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
 from x402_client import X402Client, X402PaymentResponse
 
 
+# ANSI Color codes for beautiful terminal output
+class Colors:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    DIM = '\033[2m'
+    UNDERLINE = '\033[4m'
+
+
+def print_box(text: str, color: str = Colors.CYAN, width: int = 70):
+    """Print text in a nice box"""
+    print(f"\n{color}{'─' * width}{Colors.ENDC}")
+    print(f"{color}{Colors.BOLD}{text.center(width)}{Colors.ENDC}")
+    print(f"{color}{'─' * width}{Colors.ENDC}\n")
+
+
+def print_section(title: str, color: str = Colors.BLUE):
+    """Print a section header"""
+    print(f"\n{color}{Colors.BOLD}▶ {title}{Colors.ENDC}")
+    print(f"{Colors.DIM}{'─' * 60}{Colors.ENDC}")
+
+
 @dataclass
 class BidDecision:
     """AI decision about a bid"""
@@ -74,7 +101,8 @@ class ConsumerMixin:
         if not bids:
             return []
 
-        print(f"\n🤖 AI Evaluating {len(bids)} bids...")
+        print_section("🤖 AI Bid Evaluation", Colors.HEADER)
+        print(f"{Colors.BOLD}Evaluating {len(bids)} bids using AI...{Colors.ENDC}")
 
         # Default criteria
         criteria = evaluation_criteria or {
@@ -140,12 +168,22 @@ Be selective - only accept bids that truly meet the requirements at a fair price
 
             result = json.loads(json_str)
 
-            print(f"\n📊 AI Decision:")
-            print(f"   Recommended Winner: {result.get('recommended_winner', 'None')}")
-            print(f"   Analysis: {result.get('overall_analysis', '')}")
+            print(f"\n{Colors.GREEN}{Colors.BOLD}📊 AI DECISION{Colors.ENDC}")
+            print(f"{Colors.CYAN}┌{'─' * 68}┐{Colors.ENDC}")
+            print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Recommended Winner:{Colors.ENDC} {Colors.GREEN}{result.get('recommended_winner', 'None')}{Colors.ENDC}")
+
+            analysis = result.get('overall_analysis', '')
+            # Wrap analysis text to fit nicely
+            import textwrap
+            wrapped_analysis = textwrap.fill(analysis, width=65)
+            for i, line in enumerate(wrapped_analysis.split('\n')):
+                prefix = "Analysis:" if i == 0 else "         "
+                print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}{prefix}{Colors.ENDC} {line}")
+            print(f"{Colors.CYAN}└{'─' * 68}┘{Colors.ENDC}")
 
             # Convert to BidDecision objects
             decisions = []
+            print(f"\n{Colors.BOLD}Individual Bid Evaluations:{Colors.ENDC}")
             for d in result.get("decisions", []):
                 decision = BidDecision(
                     bid_id=d["bid_id"],
@@ -155,10 +193,21 @@ Be selective - only accept bids that truly meet the requirements at a fair price
                 )
                 decisions.append(decision)
 
-                # Print decision
-                emoji = "✅" if decision.action == "accept" else "❌"
-                print(f"   {emoji} {decision.bid_id}: {decision.action.upper()}")
-                print(f"      Reasoning: {decision.reasoning}")
+                # Print decision with color
+                if decision.action == "accept":
+                    emoji = "✅"
+                    color = Colors.GREEN
+                else:
+                    emoji = "❌"
+                    color = Colors.RED
+
+                print(f"\n{color}{emoji} {Colors.BOLD}{decision.bid_id}: {decision.action.upper()}{Colors.ENDC}")
+                print(f"{Colors.DIM}   Confidence: {decision.confidence:.0%}{Colors.ENDC}")
+
+                # Wrap reasoning text
+                wrapped_reasoning = textwrap.fill(decision.reasoning, width=65)
+                for line in wrapped_reasoning.split('\n'):
+                    print(f"   {line}")
 
             return decisions
 
@@ -192,10 +241,12 @@ Be selective - only accept bids that truly meet the requirements at a fair price
                 error="x402 client not configured",
             )
 
-        print(f"\n💳 Executing Payment...")
-        print(f"   Provider: {provider_id}")
-        print(f"   Amount: {amount_usdc} USDC")
-        print(f"   URL: {provider_url}")
+        print(f"\n{Colors.YELLOW}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.ENDC}")
+        print_section("💳 x402 Payment Execution", Colors.YELLOW)
+        print(f"{Colors.BOLD}Provider:{Colors.ENDC}  {Colors.CYAN}{provider_id}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Amount:{Colors.ENDC}    {Colors.GREEN}{amount_usdc} USDC{Colors.ENDC}")
+        print(f"{Colors.BOLD}Endpoint:{Colors.ENDC}  {Colors.DIM}{provider_url}{Colors.ENDC}")
+        print(f"\n{Colors.YELLOW}⏳ Processing payment on Solana...{Colors.ENDC}")
 
         # Make payment and get data via x402
         payment_result = self.x402_client.fetch_with_payment(
@@ -204,14 +255,16 @@ Be selective - only accept bids that truly meet the requirements at a fair price
         )
 
         if payment_result.success:
-            print(f"   ✅ Payment successful!")
-            print(f"   📊 Transaction: {payment_result.transaction_signature}")
+            print(f"\n{Colors.GREEN}{Colors.BOLD}✅ PAYMENT SUCCESSFUL!{Colors.ENDC}")
+            print(f"{Colors.CYAN}┌{'─' * 68}┐{Colors.ENDC}")
+            print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Transaction:{Colors.ENDC} {Colors.GREEN}{payment_result.transaction_signature}{Colors.ENDC}")
+            print(f"{Colors.CYAN}└{'─' * 68}┘{Colors.ENDC}")
 
             if payment_result.data:
-                print(f"\n📦 DATA RECEIVED:")
-                print(f"   {json.dumps(payment_result.data, indent=6)}")
+                print(f"\n{Colors.HEADER}{Colors.BOLD}📦 DATA RECEIVED{Colors.ENDC}")
+                print(f"{Colors.CYAN}{json.dumps(payment_result.data, indent=3)}{Colors.ENDC}")
         else:
-            print(f"   ❌ Payment failed: {payment_result.error}")
+            print(f"\n{Colors.RED}{Colors.BOLD}❌ Payment failed:{Colors.ENDC} {payment_result.error}")
 
         return payment_result
 
@@ -226,7 +279,9 @@ Be selective - only accept bids that truly meet the requirements at a fair price
         Use AI to evaluate received data and submit rating
         """
 
-        print(f"\n⭐ AI Evaluating Provider Performance...")
+        print(f"\n{Colors.YELLOW}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.ENDC}")
+        print_section("⭐ AI Provider Rating", Colors.YELLOW)
+        print(f"{Colors.DIM}Analyzing service quality...{Colors.ENDC}")
 
         prompt = f"""
 You just received data/service from a provider. Evaluate their performance:
@@ -277,8 +332,14 @@ Return JSON:
 
             rating_data = json.loads(json_str)
 
-            print(f"   Rating: {rating_data['rating']}★")
-            print(f"   Review: {rating_data['review_text']}")
+            # Display rating with visual stars
+            stars = "★" * int(rating_data['rating']) + "☆" * (5 - int(rating_data['rating']))
+            print(f"\n{Colors.YELLOW}{Colors.BOLD}{stars} {rating_data['rating']}/5.0{Colors.ENDC}")
+            print(f"{Colors.CYAN}┌{'─' * 68}┐{Colors.ENDC}")
+            print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Review:{Colors.ENDC} {rating_data['review_text']}")
+            print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.DIM}Data Quality: {rating_data['data_quality']}/5 │ Response Time: {rating_data['response_time']}/5{Colors.ENDC}")
+            print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.DIM}Value for Price: {rating_data['value_for_price']}/5{Colors.ENDC}")
+            print(f"{Colors.CYAN}└{'─' * 68}┘{Colors.ENDC}")
 
             # Submit rating to registry
             response = self.http_client.post(
@@ -296,10 +357,10 @@ Return JSON:
             )
 
             if response.status_code == 200:
-                print(f"   ✅ Rating submitted successfully")
+                print(f"\n{Colors.GREEN}✅ Rating submitted to marketplace{Colors.ENDC}")
                 return True
             else:
-                print(f"   ❌ Rating submission failed: {response.text}")
+                print(f"\n{Colors.RED}❌ Rating submission failed: {response.text}{Colors.ENDC}")
                 return False
 
         except Exception as e:
@@ -324,16 +385,14 @@ Return JSON:
         Returns result with data and transaction info
         """
 
-        print(f"\n{'='*60}")
-        print(f"  🛒 Requesting Service from Marketplace")
-        print(f"{'='*60}")
-        print(f"  Task: {task_type}")
-        print(f"  Description: {task_description}")
-        print(f"  Budget: {max_budget_usdc} USDC")
-        print(f"{'='*60}\n")
+        print_box("🛒 REQUESTING SERVICE FROM MARKETPLACE", Colors.HEADER, 70)
+
+        print(f"{Colors.BOLD}Task Type:{Colors.ENDC}     {Colors.CYAN}{task_type}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Description:{Colors.ENDC}  {Colors.DIM}{task_description}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Max Budget:{Colors.ENDC}   {Colors.GREEN}{max_budget_usdc} USDC{Colors.ENDC}")
 
         # Step 1: Broadcast RFP
-        print(f"📢 Broadcasting RFP...")
+        print_section("📢 Broadcasting RFP", Colors.BLUE)
         response = self.http_client.post(
             f"{self.registry_url}/rfp/create",
             params={
@@ -354,14 +413,51 @@ Return JSON:
 
         rfp_data = response.json()
         rfp_id = rfp_data["rfp_id"]
-        print(f"✅ RFP Created: {rfp_id}")
+        print(f"{Colors.GREEN}✅ RFP Created: {Colors.BOLD}{rfp_id}{Colors.ENDC}")
 
-        # Step 2: Wait for bids
+        # Step 2: Wait for bids with streaming updates
         import time
-        print(f"\n⏳ Waiting {wait_for_bids_seconds}s for bids...")
-        time.sleep(wait_for_bids_seconds)
+        import sys
 
-        # Step 3: Get bids
+        print_section(f"⏳ Waiting for Provider Bids ({wait_for_bids_seconds}s)", Colors.YELLOW)
+        print(f"{Colors.DIM}Listening for providers to respond...{Colors.ENDC}\n")
+
+        bid_count = 0
+        elapsed = 0
+        check_interval = 1  # Check every second
+
+        while elapsed < wait_for_bids_seconds:
+            # Check for new bids
+            response = self.http_client.get(f"{self.registry_url}/rfp/{rfp_id}/bids")
+            if response.status_code == 200:
+                current_bids = response.json()
+                new_bid_count = len(current_bids)
+
+                if new_bid_count > bid_count:
+                    # New bid received!
+                    for i in range(bid_count, new_bid_count):
+                        bid = current_bids[i]
+                        provider_num = i + 1
+                        print(f"\n{Colors.GREEN}{Colors.BOLD}✓ Provider {provider_num} Responds{Colors.ENDC}")
+                        print(f"{Colors.CYAN}┌{'─' * 68}┐{Colors.ENDC}")
+                        print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Provider:{Colors.ENDC}  {Colors.CYAN}{bid.get('bidder_id', 'unknown')}{Colors.ENDC}")
+                        print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Price:{Colors.ENDC}     {Colors.GREEN}{bid.get('price_usdc', 0)} USDC{Colors.ENDC}")
+                        print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Delivery:{Colors.ENDC}  {Colors.DIM}{bid.get('estimated_completion_ms', 0)}ms{Colors.ENDC}")
+                        print(f"{Colors.CYAN}└{'─' * 68}┘{Colors.ENDC}\n")
+                    bid_count = new_bid_count
+
+            # Progress indicator
+            remaining = wait_for_bids_seconds - elapsed
+            dots = "." * ((elapsed % 3) + 1)
+            sys.stdout.write(f"\r{Colors.DIM}Listening{dots}   ({remaining}s remaining, {bid_count} providers responded){Colors.ENDC}     ")
+            sys.stdout.flush()
+
+            time.sleep(check_interval)
+            elapsed += check_interval
+
+        print("\n")  # New lines after progress
+
+        # Step 3: Get final bids
         response = self.http_client.get(f"{self.registry_url}/rfp/{rfp_id}/bids")
         if response.status_code != 200:
             return {
@@ -373,13 +469,16 @@ Return JSON:
         bids = response.json()
 
         if not bids:
+            print(f"\n{Colors.RED}❌ No bids received{Colors.ENDC}")
             return {
                 "success": False,
                 "error": "No bids received",
                 "rfp_id": rfp_id,
             }
 
-        print(f"\n📊 Received {len(bids)} bids")
+        print(f"{Colors.GREEN}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.ENDC}")
+        print(f"{Colors.GREEN}{Colors.BOLD}📊 All Bids Received: {len(bids)} Total{Colors.ENDC}")
+        print(f"{Colors.GREEN}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.ENDC}\n")
 
         # Step 4: AI evaluates bids
         decisions = self.evaluate_bids_with_ai(
@@ -401,9 +500,14 @@ Return JSON:
         winner_decision = accepted[0]
         winner_bid = next(b for b in bids if b["bid_id"] == winner_decision.bid_id)
 
-        print(f"\n✅ AI Selected Winner: {winner_bid['bidder_id']}")
-        print(f"   Price: {winner_bid['price_usdc']} USDC")
-        print(f"   Confidence: {winner_decision.confidence}")
+        print(f"\n{Colors.GREEN}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.ENDC}")
+        print(f"{Colors.GREEN}{Colors.BOLD}🏆 WINNER SELECTED{Colors.ENDC}")
+        print(f"{Colors.GREEN}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.ENDC}")
+        print(f"{Colors.CYAN}┌{'─' * 68}┐{Colors.ENDC}")
+        print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Provider:{Colors.ENDC} {Colors.GREEN}{winner_bid['bidder_id']}{Colors.ENDC}")
+        print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}Price:{Colors.ENDC} {Colors.GREEN}{winner_bid['price_usdc']} USDC{Colors.ENDC}")
+        print(f"{Colors.CYAN}│{Colors.ENDC} {Colors.BOLD}AI Confidence:{Colors.ENDC} {Colors.YELLOW}{winner_decision.confidence:.0%}{Colors.ENDC}")
+        print(f"{Colors.CYAN}└{'─' * 68}┘{Colors.ENDC}\n")
 
         # Step 5: Select winner in registry
         response = self.http_client.post(
@@ -436,6 +540,12 @@ Return JSON:
         provider_data = provider_response.json()
         provider_url = provider_data["endpoint_url"]
 
+        # Translate Docker internal URLs to localhost when running outside Docker
+        provider_url = provider_url.replace("http://provider_001:5001", "http://localhost:5001")
+        provider_url = provider_url.replace("http://provider_002:5002", "http://localhost:5002")
+        provider_url = provider_url.replace("http://kora_provider_001:6001", "http://localhost:6001")
+        provider_url = provider_url.replace("http://kora_provider_002:6002", "http://localhost:6002")
+
         # Step 7: Execute payment
         payment_result = self.execute_payment_to_winner(
             provider_id=assignment["provider_id"],
@@ -458,13 +568,11 @@ Return JSON:
                 data_received=payment_result.data,
             )
 
-        print(f"\n{'='*60}")
-        print(f"  ✅ Service Request Completed")
-        print(f"{'='*60}")
-        print(f"  Provider: {assignment['provider_id']}")
-        print(f"  Price: {assignment['agreed_price_usdc']} USDC")
-        print(f"  Transaction: {payment_result.transaction_signature}")
-        print(f"{'='*60}\n")
+        print_box("✅ SERVICE REQUEST COMPLETED", Colors.GREEN, 70)
+
+        print(f"{Colors.BOLD}Provider:{Colors.ENDC}     {Colors.CYAN}{assignment['provider_id']}{Colors.ENDC}")
+        print(f"{Colors.BOLD}Price Paid:{Colors.ENDC}   {Colors.GREEN}{assignment['agreed_price_usdc']} USDC{Colors.ENDC}")
+        print(f"{Colors.BOLD}Transaction:{Colors.ENDC} {Colors.GREEN}{payment_result.transaction_signature}{Colors.ENDC}\n")
 
         return {
             "success": True,
