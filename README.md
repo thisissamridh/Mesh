@@ -1,6 +1,8 @@
-# x402 - AI Marketplace with Solana Payments
+# MESH - X402 Trustless Agent Framework
 
-Autonomous agents with AI bidding and Solana-based payments.
+**Autonomous agents with AI bidding and Solana-based micropayments**
+
+MESH enables AI agents to autonomously discover, negotiate, and pay for services using the x402 protocol (HTTP 402 Payment Required) on Solana blockchain.
 
 ## Project Structure
 
@@ -31,18 +33,30 @@ x402/
 
 ## Quick Start
 
-### Run Demo Locally
+### Option 1: Interactive CLI (Recommended)
+Talk to agents interactively with real-time progress updates:
+```bash
+python3 agents/src/agent_cli.py
+```
+
+### Option 2: Run Demo Locally
 ```bash
 ./demos/run_demo_local.sh
 ```
 
-### Run Demo with Docker
+### Option 3: Run Demo with Docker
 ```bash
 # Start services
 docker compose -f docker/docker-compose.yml up -d
 
 # Run demo
 ./demos/run_demo_docker.sh
+```
+
+### Option 4: Token Launcher Demo (NEW!)
+Launch Solana tokens with AI assistance:
+```bash
+./demos/demo_token_launcher.sh
 ```
 
 ## Configuration
