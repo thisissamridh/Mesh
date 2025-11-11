@@ -59,6 +59,20 @@ Launch Solana tokens with AI assistance:
 ./demos/demo_token_launcher.sh
 ```
 
+### Option 5: Real Jupiter API Demo (NO MOCKS!)
+Use real Solana blockchain data from Jupiter:
+```bash
+./demos/demo_jupiter_real_data.sh
+```
+
+## Features
+
+### Real Data Providers (No Mocks!)
+- **Jupiter Price Provider** - Live token prices from Jupiter Aggregator
+- **Jupiter Verification Provider** - Token verification, holder count, liquidity stats
+- Uses actual Solana blockchain APIs
+- Real-time price data for any token pair
+
 ## Configuration
 
 - `.env` - Environment configuration
