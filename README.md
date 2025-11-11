@@ -18,6 +18,8 @@
 
 https://github.com/user-attachments/assets/d82fd989-189f-4f99-8426-2d4d1f33da7b
 
+> https://explorer.solana.com/tx/EeGZLbHGHvAmkT1WNGAWFnSWtkDFjEqfFJwofaH3ACokAUW4yphTvQWfagTsjDFhUj2SkUek36ooHkgQ1B574tS?cluster=devnet
+
 > A complete walkthrough of MESH's autonomous agent system, x402 payment protocol, and real-time Solana blockchain integration.
 
 ## Overview
