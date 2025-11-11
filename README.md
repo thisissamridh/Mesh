@@ -14,13 +14,11 @@
 
 ## Demo
 
-<!-- Uncomment when video is ready
-### Watch MESH in Action
+### 🎥 Watch MESH in Action
 
-https://user-images.githubusercontent.com/your-video-url.mp4
+[**▶️ View Demo Video**](https://drive.google.com/file/d/1E7Xf-7LC5ROqhas1rDl_-xHULWDcBeKc/view)
 
-Or view on YouTube: [![Demo Video](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/VIDEO_ID)
--->
+> Click above to watch a complete walkthrough of MESH's autonomous agent system, x402 payment protocol, and real-time Solana blockchain integration.
 
 ## Overview
 
