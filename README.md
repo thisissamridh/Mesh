@@ -33,24 +33,28 @@ MESH enables AI agents to autonomously discover, negotiate, and pay for services
 ## Key Features
 
 ### 🎯 Intelligent Agent System
+
 - **Portfolio Manager Agent** - Analyzes and manages token portfolios with AI-driven insights
 - **Token Launcher Agent** - Create and deploy Solana tokens with guided assistance
 - **Data Provider Agents** - Supply real-time blockchain data with competitive pricing
 - **Interactive CLI** - Talk to agents naturally with real-time progress updates
 
 ### 💳 x402 Payment Protocol
+
 - HTTP 402 (Payment Required) implementation for agent-to-agent transactions
 - Facilitator service handles payment verification and coordination
 - Seamless integration with Kora for Solana micropayments
 - USDC-based payments on Solana devnet
 
 ### 📊 Real Data Providers (No Mocks!)
+
 - **Jupiter Price Provider** - Live token prices from Jupiter Aggregator API
 - **Jupiter Verification Provider** - Token verification, holder counts, liquidity stats
 - **Real Solana Data** - Actual blockchain data, not simulated
 - Extensible provider framework for custom data sources
 
 ### 🏪 Marketplace Registry
+
 - RFP (Request for Proposal) system for service discovery
 - Agent registration and capability advertisement
 - Automated bid collection and evaluation
@@ -141,18 +145,21 @@ x402/
 ### Installation
 
 1. **Clone the repository**
+
 ```bash
 git clone https://github.com/thisissamridh/Mesh.git
 cd Mesh
 ```
 
 2. **Set up environment variables**
+
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
 ```
 
 3. **Install dependencies**
+
 ```bash
 # Install Python dependencies
 pip install -r requirements.txt
@@ -163,12 +170,15 @@ pip install -r registry/requirements.txt
 ### Running the System
 
 #### Option 1: Interactive CLI (Recommended)
+
 Talk to agents interactively with real-time progress updates:
+
 ```bash
 python3 agents/src/agent_cli.py
 ```
 
 Features:
+
 - Natural language interaction with AI agents
 - Real-time progress updates
 - Portfolio analysis with live Jupiter data
@@ -176,17 +186,20 @@ Features:
 - Guided workflows
 
 #### Option 2: Run Demo Locally
+
 ```bash
 ./demos/run_demo_local.sh
 ```
 
 Demonstrates:
+
 - Agent registration
 - RFP creation and bidding
 - x402 payment flow
 - Service consumption
 
 #### Option 3: Run Demo with Docker
+
 ```bash
 # Start all services
 docker compose -f docker/docker-compose.yml up -d
@@ -202,13 +215,17 @@ docker compose -f docker/docker-compose.yml down
 ```
 
 #### Option 4: Token Launcher Demo
+
 Launch Solana tokens with AI assistance:
+
 ```bash
 ./demos/demo_token_launcher.sh
 ```
 
 #### Option 5: Real Jupiter API Demo
+
 Use real Solana blockchain data from Jupiter (no mocks!):
+
 ```bash
 ./demos/demo_jupiter_real_data.sh
 ```
@@ -311,18 +328,21 @@ print(result)
 ### Running Individual Services
 
 **Registry (Port 8000)**
+
 ```bash
 cd registry
 python -m uvicorn src.main:app --reload --port 8000
 ```
 
 **Facilitator (Port 3000)**
+
 ```bash
 cd facilitator/src
 python simple_facilitator.py
 ```
 
 **Agents**
+
 ```bash
 cd agents/src
 python portfolio_manager_agent.py
@@ -367,6 +387,7 @@ Facilitator → Consumer: Data delivery (HTTP 200)
 ## Dependencies
 
 ### Core Technologies
+
 - **FastAPI** - Web framework for services
 - **OpenAI** - AI agent intelligence
 - **Solana** - Blockchain for payments
@@ -374,6 +395,7 @@ Facilitator → Consumer: Data delivery (HTTP 200)
 - **Jupiter** - Solana token aggregator
 
 ### Python Libraries
+
 - `fastapi` - Web framework
 - `uvicorn` - ASGI server
 - `httpx` - HTTP client
@@ -425,5 +447,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 <div align="center">
-Made with ❤️ by the MESH team
+Submisson for the ** Solana X402 Hackathon 2024**
 </div>
