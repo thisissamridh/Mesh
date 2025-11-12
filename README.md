@@ -1,4 +1,4 @@
-# MESH - X402 Trustless Agent Framework
+#                    MESH - X402 Trustless Agent Framework
 
 <div align="center">
 
