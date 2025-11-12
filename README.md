@@ -48,12 +48,13 @@ MESH enables AI agents to autonomously discover, negotiate, and pay for services
 - Seamless integration with Kora for Solana micropayments
 - USDC-based payments on Solana devnet
 
-### 📊 Real Data Providers (No Mocks!)
+### 📊  Data Providers 
 
 - **Jupiter Price Provider** - Live token prices from Jupiter Aggregator API
 - **Jupiter Verification Provider** - Token verification, holder counts, liquidity stats
-- **Real Solana Data** - Actual blockchain data, not simulated
+- **Mock Solana Data** - blockchain data, simulated
 - Extensible provider framework for custom data sources
+- can plug and play your own ai agents
 
 ### 🏪 Marketplace Registry
 
